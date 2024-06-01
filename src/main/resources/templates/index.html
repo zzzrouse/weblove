@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>星空</title>
+    <style type="text/css">
+        /* 现有的CSS样式保持不变 */
+        /* 添加新板块的CSS样式 */
+        .content-box {
+            position: fixed; /* 根据需要调整定位 */
+            top: 50%; /* 垂直居中 */
+            left: 50%; /* 水平居中 */
+            transform: translate(-50%, -50%); /* 居中 */
+            padding: 20px; /* 内边距 */
+            background-color: rgba(255, 255, 255, 0.8); /* 半透明背景 */
+            border-radius: 10px; /* 边框圆角 */
+            z-index: 1; /* 确保板块在星空背景之上 */
+        }
+        .content-box img {
+            max-width: 100%; /* 图片最大宽度 */
+            height: auto; /* 保持图片比例 */
+        }
+
+        .heart {
+            position: fixed;
+            top:70%; /* 根据需要调整位置 */
+            left: 60%;
+            transform: translateX(-50%);
+            width: 50px; /* 爱心的宽度 */
+            height: 90px; /* 爱心的高度 */
+            z-index: 9999; /* 确保这个值高于页面上其他元素的z-index值 */
+            animation: pulse 1s infinite; /* 闪烁动画 */
+        }
+        .heart:before,
+        .heart:after {
+            position: absolute;
+            content: "";
+            left: 50px;
+            top: 0;
+            width: 50px;
+            height: 80px;
+            background: pink; /* 爱心的颜色 */
+            border-radius: 50px 50px 0 0; /* 爱心的形状 */
+            transform: rotate(-45deg);
+            transform-origin: 0 100%;
+        }
+        .heart:after {
+            left: 0;
+            transform: rotate(45deg);
+            transform-origin: 100% 100%;
+        }
+
+        /* 爱心闪烁动画 */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+</body>
+<!-- Html代码 -->
+<div>
+    <canvas id="canvas"></canvas>
+    <canvas id="snow"></canvas>
+    <div class="heart"></div>
+    <div class="am-g" style="position: fixed; bottom: 0px;">
+        <div class="am-u-sm-12">
+            <div style="z-index: 9999" id="player" class="aplayer">
+            </div>
+            <div class="content-box">
+                <img src="\templates\photos\a1.jpg" alt="zyc with 四哥">
+                <p>"我能感觉自己岁月渐长，你却还是如初见时一样鲜妍年轻"</p>
+                <p>"无论520，还是521，君伴我便好。"</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- CSS代码 -->
+<style type="text/css">
+    canvas {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+</style>
+<script type="text/javascript">
+    var canvas = document.getElementById('canvas'),
+        ctx = canvas.getContext('2d'),
+        w = canvas.width = window.innerWidth,
+        h = canvas.height = window.innerHeight,
+
+        hue = 217,
+        stars = [],
+        count = 0,
+        maxStars = 1300;//星星数量
+
+    var canvas2 = document.createElement('canvas'),
+        ctx2 = canvas2.getContext('2d');
+    canvas2.width = 100;
+    canvas2.height = 100;
+
+    var half = canvas2.width / 2,
+        gradient2 = ctx2.createRadialGradient(half, half, 0, half, half, half);
+    gradient2.addColorStop(0.025, '#CCC');
+    gradient2.addColorStop(0.1, 'hsl(' + hue + ', 61%, 33%)');
+    gradient2.addColorStop(0.25, 'hsl(' + hue + ', 64%, 6%)');
+    gradient2.addColorStop(1, 'transparent');
+
+    ctx2.fillStyle = gradient2;
+    ctx2.beginPath();
+    ctx2.arc(half, half, half, 0, Math.PI * 2);
+    ctx2.fill();
+
+    //End cache
+
+    function random(min, max) {
+        if (arguments.length < 2) {
+            max = min;
+            min = 0;
+        }
+
+        if (min > max) {
+            var hold = max;
+            max = min;
+            min = hold;
+        }
+
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function maxOrbit(x, y) {
+        var max = Math.max(x, y),
+            diameter = Math.round(Math.sqrt(max * max + max * max));
+        return diameter / 2;
+        //星星移动范围，值越大范围越小，
+    }
+
+    var Star = function () {
+
+        this.orbitRadius = random(maxOrbit(w, h));
+        this.radius = random(60, this.orbitRadius) / 8;
+        //星星大小
+        this.orbitX = w / 2;
+        this.orbitY = h / 2;
+        this.timePassed = random(0, maxStars);
+        this.speed = random(this.orbitRadius) / 50000;
+        //星星移动速度
+        this.alpha = random(2, 10) / 10;
+
+        count++;
+        stars[count] = this;
+    }
+
+    Star.prototype.draw = function () {
+        var x = Math.sin(this.timePassed) * this.orbitRadius + this.orbitX,
+            y = Math.cos(this.timePassed) * this.orbitRadius + this.orbitY,
+            twinkle = random(10);
+
+        if (twinkle === 1 && this.alpha > 0) {
+            this.alpha -= 0.05;
+        } else if (twinkle === 2 && this.alpha < 1) {
+            this.alpha += 0.05;
+        }
+
+        ctx.globalAlpha = this.alpha;
+        ctx.drawImage(canvas2, x - this.radius / 2, y - this.radius / 2, this.radius, this.radius);
+        this.timePassed += this.speed;
+    }
+
+    for (var i = 0; i < maxStars; i++) {
+        new Star();
+    }
+
+    function animation() {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 0.5; //尾巴
+        ctx.fillStyle = 'hsla(' + hue + ', 64%, 6%, 2)';
+        ctx.fillRect(0, 0, w, h)
+
+        ctx.globalCompositeOperation = 'lighter';
+        for (var i = 1, l = stars.length; i < l; i++) {
+            stars[i].draw();
+            canvas2.style.cssText = "display:none";
+        };
+
+        window.requestAnimationFrame(animation);
+    }
+    animation();
+</script>
+
+</html>
